@@ -241,6 +241,12 @@ songs.filter(s=>s.floater).forEach(s => {
   floNodes.push({s, el:f});
 });
 
+// songs in year order, pins and floaters merged, for sequencing autoplay reveals
+const playEntries = [
+  ...pinNodes.map(({s,node}) => ({s, node, floater:false})),
+  ...floNodes.map(({s,el}) => ({s, node:el, floater:true})),
+].sort((a,b) => a.s.y - b.s.y);
+
 // ---- time slider ----
 const slider = document.getElementById('slider');
 const yrEl = document.getElementById('yr');
@@ -258,16 +264,47 @@ applyYear(+slider.value);
 
 // ---- play ----
 const play = document.getElementById('play');
-let timer = null;
-function stopPlay(){ if(timer){clearInterval(timer); timer=null;} play.textContent='▶ Play'; play.setAttribute('aria-pressed','false'); }
+const TICK_MS = 130, READ_MS = 1500;
+let playToken = 0, playTimer = null, playing = false;
+
+function stopPlay(){
+  playToken++;
+  if (playTimer) { clearTimeout(playTimer); playTimer = null; }
+  playing = false;
+  hideNow();
+  play.textContent = '▶ Play'; play.setAttribute('aria-pressed', 'false');
+}
+
+// shows each newly-lit song's card in turn, pausing READ_MS to let it be read, then calls done()
+function revealSequential(token, list, i, done){
+  if (token !== playToken) return;
+  if (i >= list.length) { done(); return; }
+  const {s, node, floater} = list[i];
+  cancelHide();
+  showCard(s, floater ? null : node, floater);
+  playTimer = setTimeout(() => {
+    if (token !== playToken) return;
+    hideNow();
+    revealSequential(token, list, i + 1, done);
+  }, READ_MS);
+}
+
+function stepYear(token, yr){
+  if (token !== playToken) return;
+  if (yr > +slider.max) { stopPlay(); return; }
+  slider.value = yr; applyYear(yr);
+  const newOnes = playEntries.filter(e => e.s.y === yr);
+  revealSequential(token, newOnes, 0, () => {
+    if (token !== playToken) return;
+    playTimer = setTimeout(() => stepYear(token, yr + 1), TICK_MS);
+  });
+}
+
 play.addEventListener('click', () => {
-  if(timer){ stopPlay(); return; }
-  play.textContent='❚❚ Pause'; play.setAttribute('aria-pressed','true');
-  let yr = +slider.min; slider.value = yr; applyYear(yr);
-  timer = setInterval(() => {
-    yr++; if(yr > +slider.max){ stopPlay(); return; }
-    slider.value = yr; applyYear(yr);
-  }, 130);
+  if (playing) { stopPlay(); return; }
+  playing = true;
+  play.textContent = '❚❚ Pause'; play.setAttribute('aria-pressed', 'true');
+  stepYear(++playToken, +slider.min);
 });
 slider.addEventListener('pointerdown', stopPlay);
 </script>
