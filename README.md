@@ -2,29 +2,38 @@
 
 An interactive map of American songs that go on record about when the party ends — or swear it never does.
 
-**[View the map →](https://YOUR-USERNAME.github.io/last-call)**
+**[View the map →](https://loldi.github.io/last-call/)**
 
 ---
 
 ## What it is
 
-Hover over a pin and you'll see the song, the artist, and the verdict: a hard stop time (Atlanta, 8 AM; Long Beach, 6 AM) or an infinity symbol for the ones that never close. A year slider underneath lets you scrub from 1949 to 2016 and watch the map fill in. Six songs that never name a city live in a shelf below the map — they still obey the slider.
+Hover over a pin and you'll see the song, the artist, and the verdict: a hard stop time (Atlanta, 8 AM; Long Beach, 6 AM) or an infinity symbol for the ones that allegedly never close. 
 
-Amber = the party has a stated end. Cyan = it never stops.
+A year slider underneath lets you scrub from 1949 to 2016 and watch the map fill in. Six songs that never name a city live in a shelf below the map — they still obey the slider.
+
+Amber = the party has a stated end. 
+Cyan = it never stops.
 
 ---
 
 ## How the data was built
 
-The dataset started as a hunch: songs like "Welcome to Atlanta" name a specific time ("parties don't stop 'til eight in the morning"), but how many others actually do that? Most just say "all night" and leave it there.
+Songs like "Welcome to Atlanta" name a specific time ("parties don't stop 'til eight in the morning"), but how many others actually do that? Most just say "all night" and leave it there.  Why do we want to know?  Why not!
 
-To find the real ones, I pulled the [MetroLyrics 380k dataset](https://github.com/ludovicaschaerf/TMCI_Project) and ran `lyric_miner.py` against it — a purpose-built scanner that looks for duration phrases ("break of dawn," "til sunrise," specific clock times, "closing time") alongside city name mentions, geocodes the cities using the offline `geonamescache` gazetteer, and scores each hit. It scanned 362,237 songs and surfaced 762 unique candidates.
+To find the real ones, we used the [MetroLyrics 380k dataset](https://github.com/ludovicaschaerf/TMCI_Project) and ran `lyric_miner.py` (a purpose-built scanner) against it. that looks for duration phrases ("break of dawn," "til sunrise," specific clock times, "closing time") alongside city name mentions, geocodes the cities using the offline `geonamescache` gazetteer, and scores each hit. It scanned 362,237 songs and surfaced 762 unique candidates.
 
-From there it was manual review. The 762 collapsed fast: 57% matched only on "all night," which is basically noise, and most of the remainder had incidental city name-drops that had nothing to do with a party. The 45 songs with genuinely hard stop signals (a clock time, dawn, closing time) got a second pass — and of those, three out of four were still false positives on closer read. George Strait's "Dallas" was a reference to the TV show. The Coup's Oakland was street life, not a party. The Game's clock reference was a hype line.
+From there it was manual review. 
 
-What survived: 17 tracks, 11 on the map, 6 on the shelf. That's the honest yield from 362k songs.
+The 762 collapsed fast: 57% matched only on "all night," and most of the remainder had incidental city name-drops that had nothing to do with a party. 
 
-The main finding is the finding: "party all night / never stop / til dawn" is everywhere in pop music, but a named city with a real stated end time is genuinely rare. Atlanta's 8 AM and Long Beach's 6 AM are the only two hard clock times in the set.
+The 45 songs with genuinely hard stop signals (a clock time, dawn, closing time) got a second pass — and of those, three out of four were still false positives on closer read. George Strait's "Dallas" was a reference to the TV show. The Coup's Oakland was street life, not a party. The Game's clock reference was a hype line.
+
+What survived: 17 tracks, 11 on the map, 6 on the shelf, a frankly surprising yield from 362k songs.
+
+Ultimatly we found that "party all night / never stop / til dawn" is everywhere in pop music, but a named city with a real stated end time is genuinely rare. Atlanta's 8 AM and Long Beach's 6 AM are the only two hard clock times in the set.
+
+So there you have it!
 
 ---
 
@@ -89,18 +98,7 @@ pip install geonamescache
 python3 lyric_miner.py --csv lyrics.csv --out candidates.csv --top 40
 ```
 
-The corpus (`lyrics.csv`) isn't in this repo — it's 324 MB unzipped. Download it from [the MetroLyrics dataset](https://github.com/ludovicaschaerf/TMCI_Project). The miner outputs a scored candidate CSV, never raw lyric text.
-
----
-
-## Hosting on GitHub Pages
-
-1. Push this repo to GitHub
-2. Go to Settings → Pages
-3. Set source to **Deploy from a branch**, branch `main`, folder `/ (root)`
-4. Update the link at the top of this README with your actual URL
-
-GitHub Pages will serve `index.html` at `https://YOUR-USERNAME.github.io/last-call`.
+The corpus (`lyrics.csv`) isn't in this repo — it's 324 MB unzipped. Download it from [the MetroLyrics dataset](https://github.com/ludovicaschaerf/TMCI_Project). The miner outputs a scored candidate CSV.
 
 ---
 
